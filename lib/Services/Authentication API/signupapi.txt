@@ -1,0 +1,51 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:random_string/random_string.dart';
+import 'package:recipeapp/Screens/Auth%20With%20API/login.txt';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SignUpApiService {
+   
+  postData(name, email, password, BuildContext context) async {
+    Dio dio = Dio();
+     String randomUsername = randomNumeric(4);
+    String signupurl =
+        "https://demopos.cgit.pk/api/index.php?action=signup&user_fullname=$name&user_email=$email&username=$name+_$randomUsername&user_password=$password";
+    try {
+      var response = await dio.post(signupurl);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.data.toString());
+        if (data["sts"] == "success") {
+          var sp = await SharedPreferences.getInstance();
+          sp.setString("signupname", name);
+          sp.setString("signupemail", email);
+          var snackBar = SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+            elevation: 0,
+            content: Text(data["msg"]),
+          );
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false);
+        } else {
+          var snackBar = SnackBar(
+            duration: const Duration(seconds: 1),
+            elevation: 0,
+            behavior: SnackBarBehavior.floating,
+            content: Text(data["msg"]),
+          );
+
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+}

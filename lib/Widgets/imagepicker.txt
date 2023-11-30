@@ -1,0 +1,100 @@
+import 'dart:io';
+import 'package:awesome_extensions/awesome_extensions.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:recipeapp/Constants/constants.dart';
+
+class MyImagePicker extends StatefulWidget {
+  const MyImagePicker({super.key});
+
+  @override
+  MyImagePickerState createState() => MyImagePickerState();
+}
+
+class MyImagePickerState extends State<MyImagePicker> {
+  File? image;
+  final picker = ImagePicker();
+  Future getImageFromGallery() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        image = File(pickedFile.path);
+      }
+    });
+  }
+
+ 
+  Future getImageFromCamera() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      if (pickedFile != null) {
+        image = File(pickedFile.path);
+      }
+    });
+  }
+
+  Future showOptions() async {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        actions: [
+          Container(
+            color: AppColors.primarycolor,
+            child: Column(
+              children: [
+                CupertinoActionSheetAction(
+                  child: const Text('Photo Gallery')
+                      .textColor(AppColors.whitecolor),
+                  onPressed: () {
+         
+                    Navigator.of(context).pop();
+    
+                    getImageFromGallery();
+                  },
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Divider(color: AppColors.whitecolor),
+                ),
+                CupertinoActionSheetAction(
+                  child: const Text('Camera').textColor(AppColors.whitecolor),
+                  onPressed: () {
+        
+                    Navigator.of(context).pop();
+         
+                    getImageFromCamera();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Image Picker Example'),
+      ),
+      body: Column(
+        children: [
+          MaterialButton(
+            color: Colors.blue,
+            onPressed: showOptions,
+            child: const Text('Select Image'),
+          ),
+          Center(
+              child: image != null
+                  ? Image.file(image!)
+                  : const Text('No Image selected')),
+        ],
+      ),
+    );
+  }
+}

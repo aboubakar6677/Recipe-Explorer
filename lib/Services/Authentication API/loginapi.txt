@@ -1,0 +1,62 @@
+import 'dart:convert';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:recipeapp/Constants/constants.dart';
+import 'package:recipeapp/Screens/HomeScreen/homescreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LoginApiServices {
+  fetchData(email, password, BuildContext context) async {
+    Dio dio = Dio();
+    String loginurl =
+        "https://demopos.cgit.pk/api/index.php?action=login&user_email=$email&user_password=$password";
+    try {
+      var response = await dio.post(loginurl);
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.data.toString());
+
+        if (data["sts"] == "success") {
+          var pref = await SharedPreferences.getInstance();
+          pref.setString("userEmail", email);
+          // var snackBar = SnackBar(
+          //    elevation: 0,
+          //         behavior: SnackBarBehavior.floating,
+          //         backgroundColor: Colors.transparent,
+          //   content: AwesomeSnackbarContent(title: 'Ok', message: '', contentType: ContentType.success,)
+          //   // Text(data["msg"]),
+
+          // );
+
+          if (!context.mounted) return;
+          // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false);
+        } else {
+          var snackBar = SnackBar(
+              duration: const Duration(seconds: 1),
+              elevation: 0,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              content: AwesomeSnackbarContent(
+                color: AppColors.primarycolor,
+                title: 'Oh! Snap,',
+                message: data["msg"],
+                contentType: ContentType.failure,
+              )
+              // Text(data["msg"]),
+
+              );
+
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+}

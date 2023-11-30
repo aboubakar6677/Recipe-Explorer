@@ -1,0 +1,227 @@
+import 'package:awesome_extensions/awesome_extensions.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:recipeapp/Constants/constants.dart';
+import 'package:recipeapp/Screens/Forget%20Password/forgetpassword.dart';
+import 'package:recipeapp/Screens/Auth%20With%20API/signupscreen.txt';
+import 'package:recipeapp/Services/Authentication%20API/loader.dart';
+import 'package:recipeapp/Services/Authentication%20API/loginapi.dart';
+import 'package:recipeapp/Widgets/custom_button.dart';
+
+class LoginScreen extends StatefulWidget {
+  static final GlobalKey<FormState> loginkey = GlobalKey<FormState>();
+
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final loginemail = TextEditingController();
+  final loginpassword = TextEditingController();
+
+  @override
+  void dispose() {
+    loginemail.dispose();
+    loginpassword.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.only(top: 100),
+          child: Form(
+            key: LoginScreen.loginkey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    child: Image.asset(
+                      AppResources.appLogopng,
+                      width: 118,
+                      height: 118,
+                    ),
+                  ),
+                  const Text(AppStrings.login)
+                      .textColor(AppColors.whitecolor)
+                      .fontSize(35)
+                      .fontFamily("PoppinsLight")
+                      ,
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: <Widget>[
+                        TextFormField(
+                          style: const TextStyle(
+                              color: AppColors.whitecolor,
+                              fontFamily: "Poppins",
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Email is required";
+                            }
+                            if (!GetUtils.isEmail(value)) {
+                              return "Email is invalid!";
+                            }
+                            return null;
+                          },
+                          controller: loginemail,
+                          decoration: InputDecoration(
+                            errorStyle:
+                                const TextStyle(color: AppColors.whitecolor),
+                            labelStyle: const TextStyle(
+                                color: AppColors.greycolor,
+                                fontFamily: "PoppinsLight",
+                                fontWeight: FontWeight.w300,
+                                fontSize: 14),
+                            isDense: true,
+                            labelText: AppStrings.email,
+                            focusedErrorBorder: errorBorder(),
+                            errorBorder: errorBorder(),
+                            focusedBorder: border(),
+                            enabledBorder: border(),
+                            floatingLabelStyle:
+                                const TextStyle(color: AppColors.whitecolor),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          style: const TextStyle(
+                              color: AppColors.whitecolor,
+                              fontFamily: "Poppins",
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Password is required";
+                            }
+                            return null;
+                          },
+                          obscureText: true,
+                          keyboardType: TextInputType.visiblePassword,
+                          // textInputAction: TextInputAction.done,
+                          controller: loginpassword,
+                          decoration: InputDecoration(
+                            errorStyle:
+                                const TextStyle(color: AppColors.whitecolor),
+                            labelText: AppStrings.password,
+                            labelStyle: const TextStyle(
+                                color: AppColors.greycolor,
+                                fontFamily: "PoppinsLight",
+                                fontWeight: FontWeight.w300,
+                                fontSize: 14),
+                            isDense: true,
+                            errorBorder: errorBorder(),
+                            focusedErrorBorder: errorBorder(),
+                            focusedBorder: border(),
+                            enabledBorder: border(),
+                            floatingLabelStyle:
+                                const TextStyle(color: AppColors.whitecolor),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              style: ButtonStyle(
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    Colors.transparent),
+                              ),
+                              onPressed: () {
+                                Get.to(() => const ForgetPassword());
+                              },
+                              child: const Text(AppStrings.forget)
+                                  .textColor(AppColors.whitecolor)
+                                  .fontSize(13)
+                                  .fontFamily("PoppinsExtraLight")
+                                  ,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        CustomButton(
+                            labelText: AppStrings.login,
+                            onTap: () {
+                              if (LoginScreen.loginkey.currentState!
+                                  .validate()) {
+                                startLoader(context);
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                LoginApiServices()
+                                    .fetchData(loginemail.text.trim(),
+                                        loginpassword.text.trim(), context)
+                                    .whenComplete(() {
+                                  stopLoader(context);
+                                });
+                              }
+                            }),
+                        const SizedBox(height: 30),
+                        TextButton(
+                          style: ButtonStyle(
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  Colors.transparent)),
+                          onPressed: () {
+                            Get.off(() => const SignUpScreen());
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(AppStrings.dont)
+                                  .textColor(AppColors.whitecolor)
+                                  .fontSize(15)
+                                  .fontFamily("PoppinsExtraLight")
+                                  ,
+                              const SizedBox(width: 4),
+                              const Text(AppStrings.signup)
+                                  .textColor(AppColors.whitecolor)
+                                  .withUnderLine()
+                                  .fontSize(15)
+                                  .fontFamily("PoppinsExtraLight")
+                                  .fontWeight(FontWeight.w200)
+                                  .textStyle(
+                                    const TextStyle(
+                                        decorationColor: AppColors.whitecolor),
+                                  ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+border() {
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(13),
+    borderSide: const BorderSide(width: 1, color: AppColors.whitecolor),
+  );
+}
+
+InputBorder errorBorder() {
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(13),
+    borderSide: const BorderSide(
+      width: 1,
+      color: Colors.red,
+    ),
+  );
+}
