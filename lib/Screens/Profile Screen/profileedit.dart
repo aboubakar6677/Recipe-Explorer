@@ -132,7 +132,12 @@ class _ProfileEditState extends State<ProfileEdit> {
                 onPressed: () {
                   Get.back();
                 },
-                child: const Text('Close').textColor(AppColors.whitecolor),
+                child: SizedBox(
+                    width: Get.width,
+                    height: 30,
+                    child: Center(
+                        child: const Text('Close')
+                            .textColor(AppColors.whitecolor))),
               ),
             ],
           ),

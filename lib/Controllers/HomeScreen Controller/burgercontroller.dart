@@ -2,24 +2,44 @@ import 'package:get/get.dart';
 import 'package:recipeapp/Models/Burger%20Model/burgermodel.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/burgerfetchapi.dart';
 
-class BurgerScreenLogic extends GetxController {
-  RxList<Recipe> recipes = <Recipe>[].obs;
-  RxBool isLoading = true.obs;
+// class BurgerScreenLogic extends GetxController {
+//   RxList<Recipe> recipes = <Recipe>[].obs;
+//   RxBool isLoading = true.obs;
   
 
+//   @override
+//   onInit() {
+//     super.onInit();
+//     getdata();
+//   }
+
+//   getdata() async {
+//     isLoading.value = true;
+//     ModelClass? response = await BurgerApiServices().fetchData();
+//     recipes.addAll(
+//       response.hits.map((hit) => hit.recipe).toList(),
+//     );
+
+//     isLoading.value = false;
+//   }
+// }
+
+class BurgerScreenLogic extends GetxController {
+  RxList<Recipe> recipes = <Recipe>[].obs;
+  RxBool isLoading= true.obs;
+
   @override
-  onInit() {
+  void onInit() {
     super.onInit();
-    getdata();
+    getBurgerData();
   }
 
-  getdata() async {
+  getBurgerData() async {
     isLoading.value = true;
     ModelClass? response = await BurgerApiServices().fetchData();
     recipes.addAll(
       response.hits.map((hit) => hit.recipe).toList(),
     );
-
     isLoading.value = false;
   }
 }

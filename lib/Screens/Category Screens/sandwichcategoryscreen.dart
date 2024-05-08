@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:recipeapp/Constants/constants.dart';
-import 'package:recipeapp/Controllers/HomeScreen%20Controller/roastcontroller.dart';
+import 'package:recipeapp/Controllers/HomeScreen%20Controller/sandwichcontroller.dart';
 import 'package:recipeapp/Widgets/chooseitemtext.dart';
 import 'package:recipeapp/Widgets/customitemcontainer.dart';
 
-class ChooseRoast extends StatelessWidget {
-  const ChooseRoast({super.key});
+class ChooseSandwich extends StatelessWidget {
+  const ChooseSandwich({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // final roastcontroller = Get.find<RoastScreenLogic>();
-    final roastcontroller = Get.put(RoastScreenLogic());
+    // final sandwichcontroller = Get.find<SandwichScreenLogic>();
+    final sandwichcontroller = Get.put(SandwichScreenLogic());
 
     return Scaffold(
         appBar: AppBar(
@@ -21,7 +21,7 @@ class ChooseRoast extends StatelessWidget {
             bottom: const PreferredSize(
                 preferredSize: Size.fromHeight(50.0), child: ChooseitemText())),
         body: Obx(
-          () => roastcontroller.isLoading.value
+          () => sandwichcontroller.isLoading.value
               ? const Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primarycolor,
@@ -31,16 +31,17 @@ class ChooseRoast extends StatelessWidget {
                   children: [
                     Expanded(
                         child: ListView.builder(
-                            itemCount: roastcontroller.roastrecipe.length,
+                            itemCount: sandwichcontroller.sandwichrecipe.length,
                             itemBuilder: (context, index) {
-                              if (index < roastcontroller.roastrecipe.length) {
+                              if (index <
+                                  sandwichcontroller.sandwichrecipe.length) {
                                 final recipe =
-                                    roastcontroller.roastrecipe[index];
+                                    sandwichcontroller.sandwichrecipe[index];
                                 return CustomItemContainer(
                                     image: recipe.image,
                                     text: recipe.label,
                                     ontap: () {
-                                      Get.toNamed('/roastDetails',
+                                      Get.toNamed('/sandwichDetails',
                                           arguments: recipe);
                                     });
                               } else {

@@ -26,13 +26,14 @@ class SignupLogic extends GetxController {
           email: signupemailcontroller.text,
           password: signuppasswordController.text.toString(),
         );
-
+        // createUserDocuments(userCredential);
         print(userCredential);
 
         try {
           var response = await FirebaseFirestore.instance
-              .collection(AppStrings.userslist)
-              .add({
+              .collection("users")
+              .doc(userCredential.user!.email)
+              .set({
             AppStrings.userid: userCredential.user!.uid,
             AppStrings.firebaseusername: namecontroller.text.trim(),
             AppStrings.userpass: signuppasswordController.text,
@@ -40,7 +41,7 @@ class SignupLogic extends GetxController {
             AppStrings.userphone: phonenumbercontroller.text.trim(),
             AppStrings.useraddress: addresscontroller.text.trim()
           });
-          print("Firebase response 1111 ${response.id}");
+          // print("Firebase response 1111 ${response.uid}");
           CommonDialog.hideLoading();
           // Navigate to Login screen
           Get.offAll(() => const Login());
@@ -85,6 +86,22 @@ class SignupLogic extends GetxController {
       return null;
     }
   }
+
+  // Future<void> createUserDocuments(UserCredential? userCredential) async {
+  //   if (userCredential != null && userCredential.user != null) {
+  //     await FirebaseFirestore.instance
+  //         .collection("users")
+  //         .doc(userCredential.user!.email)
+  //         .set({
+  //       AppStrings.userid: userCredential.user!.uid,
+  //       AppStrings.firebaseusername: namecontroller.text.trim(),
+  //       AppStrings.userpass: signuppasswordController.text,
+  //       AppStrings.useremail: signupemailcontroller.text.trim(),
+  //       AppStrings.userphone: phonenumbercontroller.text.trim(),
+  //       AppStrings.useraddress: addresscontroller.text.trim()
+  //     });
+  //   }
+  // }
 }
 
 // bool signupcontainsSpecialCharacter(String password) {

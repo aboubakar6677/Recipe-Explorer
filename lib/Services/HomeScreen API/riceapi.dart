@@ -9,7 +9,7 @@ class RiceApiServices {
 
     String appId = 'bfc78af6';
     String appKey = '%200e68ce13c869b02f21e7d0c7863f1cb3';
-
+               
     Map<String, String> headers = {
       'app_id': appId,
       'app_key': appKey,

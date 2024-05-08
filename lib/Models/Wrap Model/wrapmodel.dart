@@ -1,18 +1,18 @@
 import 'dart:convert';
 
-RiceModelClass modelClassFromJson(String str) =>
-    RiceModelClass.fromJson(json.decode(str));
+WrapModelClass wrapModelClassFromJson(String str) =>
+    WrapModelClass.fromJson(json.decode(str));
 
-String modelClassToJson(RiceModelClass data) => json.encode(data.toJson());
+String wrapModelClassToJson(WrapModelClass data) => json.encode(data.toJson());
 
-class RiceModelClass {
-  int from;
-  int to;
-  int count;
-  ModelClassLinks links;
-  List<Hit> hits;
+class WrapModelClass {
+  final int from;
+  final int to;
+  final int count;
+  final WrapModelClassLinks links;
+  final List<Hit> hits;
 
-  RiceModelClass({
+  WrapModelClass({
     required this.from,
     required this.to,
     required this.count,
@@ -20,11 +20,11 @@ class RiceModelClass {
     required this.hits,
   });
 
-  factory RiceModelClass.fromJson(Map<String, dynamic> json) => RiceModelClass(
+  factory WrapModelClass.fromJson(Map<String, dynamic> json) => WrapModelClass(
         from: json["from"],
         to: json["to"],
         count: json["count"],
-        links: ModelClassLinks.fromJson(json["_links"]),
+        links: WrapModelClassLinks.fromJson(json["_links"]),
         hits: List<Hit>.from(json["hits"].map((x) => Hit.fromJson(x))),
       );
 
@@ -38,8 +38,8 @@ class RiceModelClass {
 }
 
 class Hit {
-  RiceRecipe recipe;
-  HitLinks links;
+  final WrapRecipe recipe;
+  final HitLinks links;
 
   Hit({
     required this.recipe,
@@ -47,7 +47,7 @@ class Hit {
   });
 
   factory Hit.fromJson(Map<String, dynamic> json) => Hit(
-        recipe: RiceRecipe.fromJson(json["recipe"]),
+        recipe: WrapRecipe.fromJson(json["recipe"]),
         links: HitLinks.fromJson(json["_links"]),
       );
 
@@ -58,7 +58,7 @@ class Hit {
 }
 
 class HitLinks {
-  Self self;
+  final Self self;
 
   HitLinks({
     required this.self,
@@ -74,8 +74,8 @@ class HitLinks {
 }
 
 class Self {
-  String href;
-  Title title;
+  final String href;
+  final Title title;
 
   Self({
     required this.href,
@@ -97,20 +97,20 @@ enum Title { SELF }
 
 final titleValues = EnumValues({"Self": Title.SELF});
 
-class RiceRecipe {
-  String uri;
-  String label;
-  String image;
-  Images images;
-  List<String> dietLabels;
-  List<String> healthLabels;
-  List<String> ingredientLines;
-  List<Ingredient> ingredients;
-  List<String> cuisineType;
-  List<MealType?> mealType;
-  List<String> dishType;
+class WrapRecipe {
+  final String uri;
+  final String label;
+  final String image;
+  final Images images;
+  final List<String> dietLabels;
+  final List<String> healthLabels;
+  final List<String> ingredientLines;
+  final List<Ingredient> ingredients;
+  final List<String> cuisineType;
+  final List<String> mealType;
+  final List<String> dishType;
 
-  RiceRecipe({
+  WrapRecipe({
     required this.uri,
     required this.label,
     required this.image,
@@ -124,7 +124,7 @@ class RiceRecipe {
     required this.dishType,
   });
 
-  factory RiceRecipe.fromJson(Map<String, dynamic> json) => RiceRecipe(
+  factory WrapRecipe.fromJson(Map<String, dynamic> json) => WrapRecipe(
         uri: json["uri"],
         label: json["label"],
         image: json["image"],
@@ -136,9 +136,9 @@ class RiceRecipe {
         ingredients: List<Ingredient>.from(
             json["ingredients"].map((x) => Ingredient.fromJson(x))),
         cuisineType: List<String>.from(json["cuisineType"].map((x) => x)),
-        mealType: List<MealType?>.from(
-            json["mealType"].map((x) => mealTypeValues.map[x])),
-        dishType: List<String>.from(json["dishType"].map((x) => x)!),
+        mealType: List<String>.from(json["mealType"].map((x) => x)),
+        dishType: List<String>.from(json["dishType"].map((x) => x)??""),
+
       );
 
   Map<String, dynamic> toJson() => {
@@ -151,46 +151,43 @@ class RiceRecipe {
         "ingredientLines": List<dynamic>.from(ingredientLines.map((x) => x)),
         "ingredients": List<dynamic>.from(ingredients.map((x) => x.toJson())),
         "cuisineType": List<dynamic>.from(cuisineType.map((x) => x)),
-        "mealType":
-            List<dynamic>.from(mealType.map((x) => mealTypeValues.reverse[x])),
+        "mealType": List<dynamic>.from(mealType.map((x) => x)),
         "dishType": List<dynamic>.from(dishType.map((x) => x)),
       };
 }
 
 class Images {
-  Regular thumbnail;
-  Regular small;
-  Regular regular;
-  Regular large;
+  final Regular thumbnail;
+  final Regular small;
+  final Regular regular;
+  final Regular? large;
 
   Images({
     required this.thumbnail,
     required this.small,
     required this.regular,
-    required this.large,
+    this.large,
   });
 
   factory Images.fromJson(Map<String, dynamic> json) => Images(
         thumbnail: Regular.fromJson(json["THUMBNAIL"]),
         small: Regular.fromJson(json["SMALL"]),
         regular: Regular.fromJson(json["REGULAR"]),
-        large: (json["LARGE"] != null)
-            ? Regular.fromJson(json["LARGE"])
-            : Regular(url: "", width: 0, height: 0),
+        large: json["LARGE"] == null ? null : Regular.fromJson(json["LARGE"]),
       );
 
   Map<String, dynamic> toJson() => {
         "THUMBNAIL": thumbnail.toJson(),
         "SMALL": small.toJson(),
         "REGULAR": regular.toJson(),
-        "LARGE": large.toJson(),
+        "LARGE": large?.toJson(),
       };
 }
 
 class Regular {
-  String url;
-  int width;
-  int height;
+  final String url;
+  final int width;
+  final int height;
 
   Regular({
     required this.url,
@@ -212,14 +209,14 @@ class Regular {
 }
 
 class Ingredient {
-  String text;
-  double quantity;
-  String measure;
-  String food;
-  double weight;
-  String foodCategory;
-  String foodId;
-  String image;
+  final String text;
+  final double quantity;
+  final String? measure;
+  final String food;
+  final double weight;
+  final String foodCategory;
+  final String foodId;
+  final String image;
 
   Ingredient({
     required this.text,
@@ -235,7 +232,7 @@ class Ingredient {
   factory Ingredient.fromJson(Map<String, dynamic> json) => Ingredient(
         text: json["text"],
         quantity: json["quantity"]?.toDouble(),
-        measure: json["measure"] ?? "",
+        measure: json["measure"],
         food: json["food"],
         weight: json["weight"]?.toDouble(),
         foodCategory: json["foodCategory"] ?? "",
@@ -255,15 +252,11 @@ class Ingredient {
       };
 }
 
-enum MealType { LUNCH_DINNER }
+class WrapModelClassLinks {
+  WrapModelClassLinks();
 
-final mealTypeValues = EnumValues({"lunch/dinner": MealType.LUNCH_DINNER});
-
-class ModelClassLinks {
-  ModelClassLinks();
-
-  factory ModelClassLinks.fromJson(Map<String, dynamic> json) =>
-      ModelClassLinks();
+  factory WrapModelClassLinks.fromJson(Map<String, dynamic> json) =>
+      WrapModelClassLinks();
 
   Map<String, dynamic> toJson() => {};
 }

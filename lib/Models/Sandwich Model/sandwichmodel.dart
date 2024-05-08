@@ -1,18 +1,18 @@
 import 'dart:convert';
 
-RiceModelClass modelClassFromJson(String str) =>
-    RiceModelClass.fromJson(json.decode(str));
+SandwichModelClass modelClassFromJson(String str) =>
+    SandwichModelClass.fromJson(json.decode(str));
 
-String modelClassToJson(RiceModelClass data) => json.encode(data.toJson());
+String modelClassToJson(SandwichModelClass data) => json.encode(data.toJson());
 
-class RiceModelClass {
+class SandwichModelClass {
   int from;
   int to;
   int count;
   ModelClassLinks links;
   List<Hit> hits;
 
-  RiceModelClass({
+  SandwichModelClass({
     required this.from,
     required this.to,
     required this.count,
@@ -20,7 +20,8 @@ class RiceModelClass {
     required this.hits,
   });
 
-  factory RiceModelClass.fromJson(Map<String, dynamic> json) => RiceModelClass(
+  factory SandwichModelClass.fromJson(Map<String, dynamic> json) =>
+      SandwichModelClass(
         from: json["from"],
         to: json["to"],
         count: json["count"],
@@ -38,7 +39,7 @@ class RiceModelClass {
 }
 
 class Hit {
-  RiceRecipe recipe;
+  SandwichRecipe recipe;
   HitLinks links;
 
   Hit({
@@ -47,7 +48,7 @@ class Hit {
   });
 
   factory Hit.fromJson(Map<String, dynamic> json) => Hit(
-        recipe: RiceRecipe.fromJson(json["recipe"]),
+        recipe: SandwichRecipe.fromJson(json["recipe"]),
         links: HitLinks.fromJson(json["_links"]),
       );
 
@@ -97,7 +98,7 @@ enum Title { SELF }
 
 final titleValues = EnumValues({"Self": Title.SELF});
 
-class RiceRecipe {
+class SandwichRecipe {
   String uri;
   String label;
   String image;
@@ -106,11 +107,11 @@ class RiceRecipe {
   List<String> healthLabels;
   List<String> ingredientLines;
   List<Ingredient> ingredients;
-  List<String> cuisineType;
+  List<CuisineType?> cuisineType;
   List<MealType?> mealType;
-  List<String> dishType;
+  List<DishType?> dishType;
 
-  RiceRecipe({
+  SandwichRecipe({
     required this.uri,
     required this.label,
     required this.image,
@@ -124,7 +125,7 @@ class RiceRecipe {
     required this.dishType,
   });
 
-  factory RiceRecipe.fromJson(Map<String, dynamic> json) => RiceRecipe(
+  factory SandwichRecipe.fromJson(Map<String, dynamic> json) => SandwichRecipe(
         uri: json["uri"],
         label: json["label"],
         image: json["image"],
@@ -135,10 +136,12 @@ class RiceRecipe {
             List<String>.from(json["ingredientLines"].map((x) => x)),
         ingredients: List<Ingredient>.from(
             json["ingredients"].map((x) => Ingredient.fromJson(x))),
-        cuisineType: List<String>.from(json["cuisineType"].map((x) => x)),
+        cuisineType: List<CuisineType?>.from(
+            json["cuisineType"].map((x) => cuisineTypeValues.map[x])),
         mealType: List<MealType?>.from(
             json["mealType"].map((x) => mealTypeValues.map[x])),
-        dishType: List<String>.from(json["dishType"].map((x) => x)!),
+        dishType: List<DishType?>.from(
+            json["dishType"].map((x) => dishTypeValues.map[x])),
       );
 
   Map<String, dynamic> toJson() => {
@@ -150,12 +153,30 @@ class RiceRecipe {
         "healthLabels": List<dynamic>.from(healthLabels.map((x) => x)),
         "ingredientLines": List<dynamic>.from(ingredientLines.map((x) => x)),
         "ingredients": List<dynamic>.from(ingredients.map((x) => x.toJson())),
-        "cuisineType": List<dynamic>.from(cuisineType.map((x) => x)),
+        "cuisineType": List<dynamic>.from(
+            cuisineType.map((x) => cuisineTypeValues.reverse[x])),
         "mealType":
             List<dynamic>.from(mealType.map((x) => mealTypeValues.reverse[x])),
-        "dishType": List<dynamic>.from(dishType.map((x) => x)),
+        "dishType":
+            List<dynamic>.from(dishType.map((x) => dishTypeValues.reverse[x])),
       };
 }
+
+enum CuisineType { AMERICAN, BRITISH, ITALIAN }
+
+final cuisineTypeValues = EnumValues({
+  "american": CuisineType.AMERICAN,
+  "british": CuisineType.BRITISH,
+  "italian": CuisineType.ITALIAN
+});
+
+enum DishType { MAIN_COURSE, PANCAKE, STARTER }
+
+final dishTypeValues = EnumValues({
+  "main course": DishType.MAIN_COURSE,
+  "pancake": DishType.PANCAKE,
+  "starter": DishType.STARTER
+});
 
 class Images {
   Regular thumbnail;
@@ -174,7 +195,7 @@ class Images {
         thumbnail: Regular.fromJson(json["THUMBNAIL"]),
         small: Regular.fromJson(json["SMALL"]),
         regular: Regular.fromJson(json["REGULAR"]),
-        large: (json["LARGE"] != null)
+        large: (json["Large"] != null)
             ? Regular.fromJson(json["LARGE"])
             : Regular(url: "", width: 0, height: 0),
       );
@@ -255,9 +276,13 @@ class Ingredient {
       };
 }
 
-enum MealType { LUNCH_DINNER }
+enum MealType { BREAKFAST, LUNCH_DINNER, TEATIME }
 
-final mealTypeValues = EnumValues({"lunch/dinner": MealType.LUNCH_DINNER});
+final mealTypeValues = EnumValues({
+  "breakfast": MealType.BREAKFAST,
+  "lunch/dinner": MealType.LUNCH_DINNER,
+  "teatime": MealType.TEATIME
+});
 
 class ModelClassLinks {
   ModelClassLinks();

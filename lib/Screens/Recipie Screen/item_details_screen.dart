@@ -339,6 +339,7 @@ import 'package:awesome_extensions/awesome_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:recipeapp/Constants/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GeneralDetailsScreen extends StatefulWidget {
   const GeneralDetailsScreen({super.key});
@@ -433,6 +434,7 @@ class _GeneralDetailsScreenState extends State<GeneralDetailsScreen>
                                         as List<String>)
                                     .map((ingredient) {
                                   return ListTile(
+                                    minVerticalPadding: 0,
                                     leading: Container(
                                       height: 8.0,
                                       width: 8.0,
@@ -471,6 +473,8 @@ class _GeneralDetailsScreenState extends State<GeneralDetailsScreen>
                                     (selectedItem.healthLabels as List<String>)
                                         .map((healthLabel) {
                                   return ListTile(
+                                    minVerticalPadding: 0,
+                                    minLeadingWidth: 3,
                                     leading: Container(
                                       height: 8.0,
                                       width: 8.0,
@@ -505,9 +509,6 @@ class _GeneralDetailsScreenState extends State<GeneralDetailsScreen>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("Dish Type :")
-                                        .textColor(AppColors.blackcolor)
-                                        .fontSize(18),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
@@ -547,14 +548,32 @@ class _GeneralDetailsScreenState extends State<GeneralDetailsScreen>
                                         .textColor(AppColors.blackcolor)
                                         .fontSize(18),
                                     const SizedBox(height: 5),
-                                    Text(
-                                      selectedItem.uri,
-                                      style: const TextStyle(
-                                        color: AppColors.blackcolor,
-                                        fontSize: 14,
-                                        decoration: TextDecoration.underline,
+                                    // Text(
+                                    //   selectedItem.uri,
+                                    //   style: const TextStyle(
+                                    //     color: AppColors.blackcolor,
+                                    //     fontSize: 14,
+                                    //     decoration: TextDecoration.underline,
+                                    //   ),
+                                    // ),
+
+                                    InkWell(
+                                      onTap: () {
+                                        _launchURL(selectedItem);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: const BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(20)),
+                                            color: Color.fromARGB(
+                                                255, 244, 101, 54)),
+                                        child: const Text(
+                                          "Click here",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                       ),
-                                    ),
+                                    )
                                   ],
                                 ),
                               ),
@@ -592,10 +611,16 @@ class _GeneralDetailsScreenState extends State<GeneralDetailsScreen>
               ],
             ),
           ),
-        
         ],
       ),
     );
+  }
+
+  _launchURL(selectedItem) async {
+    final Uri url = Uri.parse(selectedItem.uri);
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $_launchURL()');
+    }
   }
 
   @override

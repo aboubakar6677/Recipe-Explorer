@@ -10,8 +10,8 @@ class ChooseRice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ricecontroller = Get.find<RiceScreenLogic>();
-
+    // final ricecontroller = Get.find<RiceScreenLogic>();
+    final ricecontroller = Get.put(RiceScreenLogic());
     return Scaffold(
         appBar: AppBar(
             backgroundColor: AppColors.primarycolor,

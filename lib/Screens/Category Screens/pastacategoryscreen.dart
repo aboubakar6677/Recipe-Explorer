@@ -10,7 +10,8 @@ class ChoosePasta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pastacontroller = Get.find<PastaScreenLogic>();
+    // final pastacontroller = Get.find<PastaScreenLogic>();
+    final pastacontroller = Get.put(PastaScreenLogic());
 
     return Scaffold(
         appBar: AppBar(
@@ -39,14 +40,13 @@ class ChoosePasta extends StatelessWidget {
                                     image: recipe.image,
                                     text: recipe.label,
                                     ontap: () {
-                                        Get.toNamed('/pastaDetails',
+                                      Get.toNamed('/pastaDetails',
                                           arguments: recipe);
                                     });
                               } else {
                                 return Container();
                               }
                             }))
-                  
                   ],
                 ),
         ));

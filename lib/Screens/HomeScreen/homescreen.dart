@@ -1,5 +1,8 @@
 // import 'package:awesome_drawer_bar/awesome_drawer_bar.dart';
+import 'dart:io';
+
 import 'package:awesome_extensions/awesome_extensions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -14,16 +17,24 @@ import 'package:recipeapp/Screens/Category%20Screens/pastacategoryscreen.dart';
 import 'package:recipeapp/Screens/Category%20Screens/pizzacategoryscreen.dart';
 import 'package:recipeapp/Screens/Category%20Screens/ricecategoryscreen.dart';
 import 'package:recipeapp/Screens/Category%20Screens/roastcategoryscreen.dart';
-import 'package:recipeapp/Screens/Category%20Screens/searcheddatascreen.dart';
+import 'package:recipeapp/Screens/Category%20Screens/saladcategoryscreen.dart';
+import 'package:recipeapp/Screens/Category%20Screens/sandwichcategoryscreen.dart';
+import 'package:recipeapp/Screens/Category%20Screens/wrapcategoryscreen.dart';
 import 'package:recipeapp/Screens/Favorite%20Item%20Screen/favorit.dart';
+import 'package:recipeapp/Screens/Forget%20Password/forgetpsswordfirebase.dart';
 import 'package:recipeapp/Screens/Profile%20Screen/profilescreen.dart';
+import 'package:recipeapp/Screens/about/details.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/burgerfetchapi.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/pastaapi.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/pizaaapi.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/riceapi.dart';
 import 'package:recipeapp/Services/HomeScreen%20API/roastapi.dart';
-import 'package:recipeapp/Services/searchapi.dart';
+import 'package:recipeapp/Services/HomeScreen%20API/saladapi.dart';
+import 'package:recipeapp/Services/HomeScreen%20API/sandwichapi.dart';
+import 'package:recipeapp/Services/HomeScreen%20API/wrapapi.dart';
 import 'package:recipeapp/Widgets/customhomerow.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,7 +47,91 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
   int searchCount = 0;
   final TextEditingController _searchController = TextEditingController();
+  User? currentUser = FirebaseAuth.instance.currentUser;
 
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserDetail() async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentUser!.email)
+        .get();
+  }
+
+  late SharedPreferences sp;
+
+  File? image;
+  @override
+  void initState() {
+    super.initState();
+    loadImagePath();
+  }
+
+  Future<void> loadImagePath() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? imagePath = prefs.getString('imagePath');
+    if (imagePath != null) {
+      setState(() {
+        image = File(imagePath);
+      });
+    }
+  }
+
+  getData() async {
+    sp = await SharedPreferences.getInstance();
+    getImagePath();
+  }
+
+  Future<void> getImagePath() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.getString('imagePath');
+  }
+
+  void _viewPhoto() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            color: AppColors.primarycolor,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.file(image!,
+                          width: 300, height: 350, fit: BoxFit.cover),
+                    )
+                  : const Text('No picture available'),
+              const SizedBox(height: 2),
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: SizedBox(
+                    width: Get.width,
+                    height: 30,
+                    child: Center(
+                        child: const Text('Close')
+                            .textColor(AppColors.whitecolor))),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _shareApp() {
+    const String appLink =
+        'https://play.google.com/store/apps/details?id=com.app.recipeapp';
+    const String message = 'Check out this awesome  Recipe_app: $appLink';
+
+    Share.share(message);
+  }
+
+  // final picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
     FavouriteCounterController favouriteCounterController = Get.find();
@@ -75,15 +170,40 @@ class _HomeScreenState extends State<HomeScreen> {
                             onSubmitted: (text) {
                               // Handle search when the user submits the text
                               // You can call your search function here
-                              SearchAPiServices().fetchSearchData(text.trim());
-                              String trimmedText = text.trim();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SearchResultsScreen(
-                                      searchData: trimmedText),
-                                ),
-                              );
+                              // SearchAPiServices().fetchSearchData(text.trim());
+                              // String trimmedText = text.trim();
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => SearchResultsScreen(
+                              //         searchData: trimmedText),
+                              //   ),
+                              // );
+                              if (_searchController.text.toLowerCase() ==
+                                  'pizza') {
+                                Get.to(() => const ChoosePizza());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'burger') {
+                                Get.to(() => const ChooseBurger());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'pasta') {
+                                Get.to(() => const ChoosePasta());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'roast') {
+                                Get.to(() => const ChooseRoast());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'rice') {
+                                Get.to(() => const ChooseRice());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'wrap') {
+                                Get.to(() => const ChooseWrap());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'sandwich') {
+                                Get.to(() => const ChooseSandwich());
+                              } else if (_searchController.text.toLowerCase() ==
+                                  'salad') {
+                                Get.to(() => const ChooseSalad());
+                              }
                             },
                             cursorColor: AppColors.greycolor,
                             decoration: InputDecoration(
@@ -167,7 +287,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Text("My Profile").fontFamily("PoppinsLight"),
                     ),
                     PopupMenuItem(
-                      onTap: () {},
+                      onTap: () {
+                        Get.to(() => const ForgetPassword());
+                      },
                       child: const Text("Reset Password")
                           .fontFamily("PoppinsLight"),
                     ),
@@ -194,17 +316,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   children: [
-                    ClipOval(
-                      child: Image.asset(
-                        "assets/png/profile.jpg",
-                        fit: BoxFit.cover,
-                        width: 70,
-                        height: 70,
+                    InkWell(
+                      onTap: _viewPhoto,
+                      child: ClipOval(
+                        child: image != null
+                            ? Image.file(image!,
+                                width: 80, height: 80, fit: BoxFit.cover)
+                            : Image.asset('assets/png/profile.jpg',
+                                fit: BoxFit.cover, height: 80, width: 80),
                       ),
                     ),
-                    const SizedBox(width: 25),
-                    const Text("CGIT Application")
-                        .fontFamily(FontRes.poppinsbold)
+                    const SizedBox(width: 15),
+                    FutureBuilder(
+                        future: getUserDetail(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            // return Text('Error: ${snapshot.error}');
+                            return const Text(
+                              'User is not Logged in...',
+                              style: TextStyle(fontSize: 11),
+                            );
+                          } else {
+                            Map<String, dynamic>? userData =
+                                snapshot.data!.data();
+
+                            return Container(
+                              width: 170,
+                              padding: const EdgeInsets.only(top: 25),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                // mainAxisAlignment:
+                                //     MainAxisAlignment.spaceAround,
+                                children: [
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  const Text('Name:')
+                                      .fontSize(11)
+                                      .fontFamily(FontRes.poppinsmedium),
+                                  Text(userData![AppStrings.firebaseusername])
+                                      .textColor(AppColors.primarycolor)
+                                      .fontFamily(FontRes.poppinsbold)
+                                      .fontSize(13),
+                                  const Text('Email:')
+                                      .fontSize(11)
+                                      .fontFamily(FontRes.poppinsmedium),
+                                  Text(userData[AppStrings.useremail])
+                                      .textColor(AppColors.primarycolor)
+                                      .fontFamily(FontRes.poppinsbold)
+                                      .fontSize(11),
+                                ],
+                              ),
+                            );
+                          }
+                        })
                   ],
                 ),
               ),
@@ -238,6 +403,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       //     },
                       //   );
                       // }
+                      // Share.share("https://www.cgit.pk/");
+                      _shareApp();
                     },
                   ),
                 ],
@@ -251,42 +418,43 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 onTap: () {
-                  //   if (favouriteCounterController.favoriteItems.isNotEmpty) {
-                  //     Get.off(() => const FavouriteListScreen());
-                  //   } else {
-                  //     Get.off(() => const FavouriteListScreen());
-                  //     QuickAlert.show(
-                  //         confirmBtnTextStyle: const TextStyle(
-                  //             fontSize: 18, color: AppColors.whitecolor),
-                  //         confirmBtnColor: AppColors.primarycolor,
-                  //         text: "Favorites item list is empty.",
-                  //         context: context,
-                  //         type: QuickAlertType.info,
-                  //         confirmBtnText: "OK",
-                  //         onConfirmBtnTap: () {
-                  //           Get.back();
-                  //         });
-                  //   }
+                  Get.to(() => const Detail());
+                  // if (favouriteCounterController.favoriteItems.isNotEmpty) {
+                  //   Get.off(() => const FavouriteListScreen());
+                  // } else {
+                  //   Get.off(() => const FavouriteListScreen());
+                  //   QuickAlert.show(
+                  //       confirmBtnTextStyle: const TextStyle(
+                  //           fontSize: 18, color: AppColors.whitecolor),
+                  //       confirmBtnColor: AppColors.primarycolor,
+                  //       text: "Favorites item list is empty.",
+                  //       context: context,
+                  //       type: QuickAlertType.info,
+                  //       confirmBtnText: "OK",
+                  //       onConfirmBtnTap: () {
+                  //         Get.back();
+                  //       });
+                  // }
                 },
               ),
-              ListTile(
-                title: Row(
-                  children: [
-                    const Icon(Icons.person_3, color: AppColors.primarycolor),
-                    const SizedBox(width: 20),
-                    const Text('Person 2').fontFamily(FontRes.poppinsmedium),
-                  ],
-                ),
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    const Icon(Icons.person_2, color: AppColors.primarycolor),
-                    const SizedBox(width: 20),
-                    const Text('Person 3').fontFamily(FontRes.poppinsmedium),
-                  ],
-                ),
-              ),
+              // ListTile(
+              //   title: Row(
+              //     children: [
+              //       const Icon(Icons.person_3, color: AppColors.primarycolor),
+              //       const SizedBox(width: 20),
+              //       const Text('Person 2').fontFamily(FontRes.poppinsmedium),
+              //     ],
+              //   ),
+              // ),
+              // ListTile(
+              //   title: Row(
+              //     children: [
+              //       const Icon(Icons.person_2, color: AppColors.primarycolor),
+              //       const SizedBox(width: 20),
+              //       const Text('Person 3').fontFamily(FontRes.poppinsmedium),
+              //     ],
+              //   ),
+              // ),
               const SizedBox(height: 250),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
@@ -323,6 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(12.0),
           child: SingleChildScrollView(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
@@ -335,44 +504,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 CustomHomeRow(
                     ontap1: () {
                       BurgerApiServices().fetchData();
-                      if (searchCount < 4) {
-                        searchCount++;
-                        Get.to(() => const ChooseBurger());
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseBurger());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
                       } else {
-                        QuickAlert.show(
-                            confirmBtnTextStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.whitecolor),
-                            confirmBtnColor: AppColors.primarycolor,
-                            text:
-                                "You've reached the limit. Please Log in or Create an account.",
-                            customAsset: "assets/png/alert.png",
-                            context: context,
-                            type: QuickAlertType.warning,
-                            confirmBtnText: "OKAY",
-                            onConfirmBtnTap: () {
-                              Get.offAll(() => const Login());
-                            });
+                        Get.to(() => const ChooseBurger());
                       }
                     },
                     ontap2: () {
                       PizzaApiServices().fetchPizzaData();
-                      if (searchCount < 4) {
-                        searchCount++;
-                        Get.to(() => const ChoosePizza());
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChoosePizza());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
                       } else {
-                        QuickAlert.show(
-                            confirmBtnTextStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.whitecolor),
-                            confirmBtnColor: AppColors.primarycolor,
-                            text:
-                                "You've reached the limit. Please Log in or Create an account.",
-                            customAsset: "assets/png/alert.png",
-                            context: context,
-                            type: QuickAlertType.warning,
-                            confirmBtnText: "OKAY",
-                            onConfirmBtnTap: () {
-                              Get.offAll(() => const Login());
-                            });
+                        Get.to(() => const ChoosePizza());
                       }
                     },
                     image1: AppResources.burger,
@@ -383,44 +560,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 CustomHomeRow(
                     ontap1: () {
                       PastaApiServices().fetchPastaData();
-                      if (searchCount < 4) {
-                        searchCount++;
-                        Get.to(() => const ChoosePasta());
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChoosePasta());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
                       } else {
-                        QuickAlert.show(
-                            confirmBtnTextStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.whitecolor),
-                            confirmBtnColor: AppColors.primarycolor,
-                            text:
-                                "You've reached the limit. Please Log in or Create an account.",
-                            customAsset: "assets/png/alert.png",
-                            context: context,
-                            type: QuickAlertType.warning,
-                            confirmBtnText: "OKAY",
-                            onConfirmBtnTap: () {
-                              Get.offAll(() => const Login());
-                            });
+                        Get.to(() => const ChoosePasta());
                       }
                     },
                     ontap2: () {
                       RoastApiService().fetchRoastData();
-                      if (searchCount < 4) {
-                        searchCount++;
-                        Get.to(() => const ChooseRoast());
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseRoast());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
                       } else {
-                        QuickAlert.show(
-                            confirmBtnTextStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.whitecolor),
-                            confirmBtnColor: AppColors.primarycolor,
-                            text:
-                                "You've reached the limit. Please Log in or Create an account.",
-                            customAsset: "assets/png/alert.png",
-                            context: context,
-                            type: QuickAlertType.warning,
-                            confirmBtnText: "OKAY",
-                            onConfirmBtnTap: () {
-                              Get.offAll(() => const Login());
-                            });
+                        Get.to(() => const ChooseRoast());
                       }
                     },
                     image1: AppResources.pasta,
@@ -431,23 +616,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 CustomHomeRow(
                     ontap1: () {
                       RiceApiServices().fetchRiceData();
-                      if (searchCount < 4) {
-                        searchCount++;
-                        Get.to(() => const ChooseRice());
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseRice());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
                       } else {
-                        QuickAlert.show(
-                            confirmBtnTextStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.whitecolor),
-                            confirmBtnColor: AppColors.primarycolor,
-                            text:
-                                "You've reached the limit. Please Log in or Create an account.",
-                            customAsset: "assets/png/alert.png",
-                            context: context,
-                            type: QuickAlertType.warning,
-                            confirmBtnText: "OKAY",
-                            onConfirmBtnTap: () {
-                              Get.offAll(() => const Login());
-                            });
+                        Get.to(() => const ChooseRice());
+                      }
+                    },
+                    ontap2: () {
+                      WrapApiServices().fetchWrapData();
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseWrap());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
+                      } else {
+                        Get.to(() => const ChooseWrap());
                       }
                     },
                     image1: AppResources.rice,
@@ -455,7 +669,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     image2: AppResources.wrap,
                     text2: AppStrings.wrapname),
                 const SizedBox(height: 10),
-                const CustomHomeRow(
+                CustomHomeRow(
+                    ontap1: () {
+                      SandwichApiServices().fetchSandwichData();
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseSandwich());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
+                      } else {
+                        Get.to(() => const ChooseSandwich());
+                      }
+                    },
+                    ontap2: () {
+                      SaladApiServices().fetchSaladData();
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        if (searchCount < 4) {
+                          searchCount++;
+                          Get.to(() => const ChooseSalad());
+                        } else {
+                          QuickAlert.show(
+                              confirmBtnTextStyle: const TextStyle(
+                                  fontSize: 18, color: AppColors.whitecolor),
+                              confirmBtnColor: AppColors.primarycolor,
+                              text:
+                                  "You've reached the limit. Please Log in or Create an account.",
+                              customAsset: "assets/png/alert.png",
+                              context: context,
+                              type: QuickAlertType.warning,
+                              confirmBtnText: "OKAY",
+                              onConfirmBtnTap: () {
+                                Get.offAll(() => const Login());
+                              });
+                        }
+                      } else {
+                        Get.to(() => const ChooseSalad());
+                      }
+                    },
                     image1: AppResources.donut,
                     text1: AppStrings.sandwichname,
                     image2: AppResources.salad,
